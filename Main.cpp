@@ -1,8 +1,6 @@
-#include <fstream>
-#include <iostream>
 #include "archive/Hash.h"
 
-int main(int argc, char** argv)
+int main(int argc, char** args)
 {
 	// initialize the gcrypt library
 	Hash::initialize();

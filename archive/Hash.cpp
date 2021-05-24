@@ -26,7 +26,9 @@ Hash::Hash()
 }
 
 void Hash::digest(std::ifstream& dataStream)
-{	
+{
+	gcry_md_reset(hasher);
+
 	// keep hasing chunks of the file until the file is completely hashed
 	while(dataStream)
 	{
