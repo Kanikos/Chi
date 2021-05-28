@@ -59,7 +59,7 @@ bool Image::operator<(const Image& image) const
 // Assignment operator
 //--------------------------------------------------
 
-Image& operator=(const Image& image)
+Image& Image::operator=(const Image& image)
 {
 	digest = image.digest;
 	width = image.width;
@@ -68,7 +68,7 @@ Image& operator=(const Image& image)
 	return *this;
 }
 
-Image& operator=(Image&& image)
+Image& Image::operator=(Image&& image)
 {
 	digest = std::move(image.digest);
 	width = image.width;

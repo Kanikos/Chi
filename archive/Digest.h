@@ -33,6 +33,13 @@ public:
 	bool operator>(const Digest& digest) const;
 
 	//--------------------------------------------------
+	// assignment operators
+	//--------------------------------------------------
+
+	Digest& operator=(const Digest& digest);
+	Digest& operator=(Digest&& digest);
+
+	//--------------------------------------------------
 	// stream operators
 	//--------------------------------------------------
 

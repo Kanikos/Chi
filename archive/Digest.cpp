@@ -89,6 +89,26 @@ bool Digest::operator>(const Digest& digest) const
 }
 
 //--------------------------------------------------
+// assignment operators
+//--------------------------------------------------
+
+Digest& Digest::operator=(const Digest& digest)
+{
+	memcpy(hash, digest.hash, Hash::HASH_SIZE);
+	return *this;
+}
+
+Digest& Digest::operator=(Digest&& digest)
+{
+	// release the internal hash buffer and commandeer digest's hash buffer
+	delete hash;
+	hash = digest.hash;
+	
+	digest.hash = nullptr;
+	return *this;
+}
+
+//--------------------------------------------------
 // stream operators
 //--------------------------------------------------
 
