@@ -92,10 +92,17 @@ bool Digest::operator>(const Digest& digest) const
 // assignment operators
 //--------------------------------------------------
 
+Digest& Digest::operator=(const void* buffer)
+{
+	memcpy(hash, buffer, Hash::HASH_SIZE);
+	return *this;
+}
+
+//--------------------------------------------------
+
 Digest& Digest::operator=(const Digest& digest)
 {
-	memcpy(hash, digest.hash, Hash::HASH_SIZE);
-	return *this;
+	return operator=(digest.hash);
 }
 
 Digest& Digest::operator=(Digest&& digest)

@@ -36,6 +36,8 @@ public:
 	// assignment operators
 	//--------------------------------------------------
 
+	Digest& operator=(const void *buffer);
+
 	Digest& operator=(const Digest& digest);
 	Digest& operator=(Digest&& digest);
 
