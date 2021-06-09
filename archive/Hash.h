@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <cstddef>
 #include <cstdio>
 #include <iostream>
 #include <gcrypt.h>
@@ -14,14 +15,18 @@ private:
 
 public:
 	//--------------------------------------------------
-	// static functions
+	// properties
 	//--------------------------------------------------
 
-	static constexpr unsigned int BUFFER_SIZE = 1048576;
-	static constexpr unsigned int HASH_SIZE = 32;
+	static constexpr size_t BUFFER_SIZE = 1048576;
+	static constexpr size_t HASH_SIZE = 32;
 
 	char buffer[BUFFER_SIZE];
 	unsigned char *output = nullptr;
+
+	//--------------------------------------------------
+	// initializer
+	//--------------------------------------------------
 
 	/*
 	 * THIS MUST BE CALLED BEFORE USING AN INSTANCE OF THIS CLASS
@@ -30,27 +35,30 @@ public:
 	static void initialize();
 
 	//--------------------------------------------------
-	// instance functions
+	// constructors
+	//  - allocates ~1 MB for hashing
 	//--------------------------------------------------
 
-	/*
-	 * allocates gcrypt resouces for sha256 hashing
-	 */
 	Hash();
 
-	/*
-	 * Hashes an entire file from stream
-	 * the resulting hash is stored in the internal buffer
-	 */
+	//--------------------------------------------------
+	// hashing functions
+	//  - hashes the entire file
+	//  - hashing begins where the streams is pointing at
+	//--------------------------------------------------
+
 	void digest(std::ifstream& dataStream);
+	void digest(FILE *dataStream);
 
-	/*
-	 * enables printing to stream
-	 */
+	//--------------------------------------------------
+	// stream operators
+	//--------------------------------------------------
+
 	friend std::ostream& operator<<(std::ostream& out, const Hash& hash);
-
-	/*
-	 * frees gcrypt resources
-	 */
+	
+	//--------------------------------------------------
+	// destructors
+	//  - frees gcrypt resources
+	//--------------------------------------------------
 	~Hash();
 };

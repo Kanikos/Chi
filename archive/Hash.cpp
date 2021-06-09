@@ -40,6 +40,22 @@ void Hash::digest(std::ifstream& dataStream)
 	output = gcry_md_read(hasher, GCRY_MD_SHA256);
 }
 
+void Hash::digest(FILE *dataStream)
+{
+	gcry_md_reset(hasher);
+
+	// keeping hashing chunks of the file until the file is completely hashed
+	size_t bytesRead;
+	while(!feof(dataStream))
+	{
+		bytesRead = fread(buffer, 1, BUFFER_SIZE, dataStream);
+		gcry_md_write(hasher, buffer, bytesRead);
+	}
+
+	// get a pointer to the resulting hash
+	output = gcry_md_read(hasher, GCRY_MD_SHA256);
+}
+
 std::ostream& operator<<(std::ostream& out, const Hash& hash)
 {
 	return out.write((const char*) hash.output, Hash::HASH_SIZE);
