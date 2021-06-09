@@ -4,20 +4,32 @@
 // constructors
 //--------------------------------------------------
 
-Image::Image(const Digest& digest, size_t width, size_t height)
-: digest(digest), width(width), height(height)
+Image::Image(const std::filesystem::path& path)
+: path(path)
 {}
 
-Image::Image(Digest&& digest, size_t width, size_t height)
-: digest(std::move(digest)), width(width), height(height)
+Image::Image(std::filesystem::path&& path)
+: path(std::move(path))
 {}
+
+//--------------------------------------------------
+
+Image::Image(const std::filesystem::path& path, const Digest& digest, size_t width, size_t height)
+: path(path), digest(digest), width(width), height(height)
+{}
+
+Image::Image(std::filesystem::path&& path, Digest&& digest, size_t width, size_t height)
+: path(std::move(path)), digest(std::move(digest)), width(width), height(height)
+{}
+
+//--------------------------------------------------
 
 Image::Image(const Image& image)
-: Image(image.digest, image.width, image.height)
+: Image(image.path, image.digest, image.width, image.height)
 {}
 
 Image::Image(Image&& image)
-: Image(std::move(image.digest), image.width, image.height)
+: Image(std::move(image.path), std::move(image.digest), image.width, image.height)
 {}
 
 //--------------------------------------------------
@@ -56,7 +68,7 @@ bool Image::operator<(const Image& image) const
 }
 
 //--------------------------------------------------
-// Assignment operator
+// assignment operator
 //--------------------------------------------------
 
 Image& Image::operator=(const Image& image)
@@ -75,4 +87,13 @@ Image& Image::operator=(Image&& image)
 	height = image.height;
 
 	return *this;
+}
+
+//--------------------------------------------------
+// stream operators
+//--------------------------------------------------
+
+std::ostream& operator<<(std::ostream& out, const Image& image)
+{
+	return out << image.digest << ": " << image.width << "x" << image.height;
 }
