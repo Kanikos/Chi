@@ -4,16 +4,16 @@
 // constructors
 //--------------------------------------------------
 
-PNG::PNG(const std::filesystem::path& path)
+PNG::PNG(const std::filesystem::path& path, Hash& hasher)
 : Image(path)
 {
-	readImage(path.c_str());
+	readImage(path.c_str(), hasher);
 }
 
-PNG::PNG(std::filesystem::path&& path)
+PNG::PNG(std::filesystem::path&& path, Hash& hasher)
 : Image(std::move(path))
 {
-	readImage(path.c_str());
+	readImage(path.c_str(), hasher);
 }
 
 //--------------------------------------------------
@@ -30,7 +30,7 @@ PNG::PNG(PNG&& image)
 // readImage implementation
 //--------------------------------------------------
 
-void PNG::readImage(const char* path)
+void PNG::readImage(const char* path, Hash& hasher)
 {
 	constexpr size_t HEADER_SIZE = 8;
 
@@ -66,9 +66,8 @@ void PNG::readImage(const char* path)
 	// initialize the digest from hashing the entire image file
 	fseek(imageFile, 0, SEEK_SET);
 
-	Hash hasher;
 	hasher.digest(imageFile);
-	digest = hasher.buffer;
+	digest = hasher.output;
 	
 	fclose(imageFile);
 }

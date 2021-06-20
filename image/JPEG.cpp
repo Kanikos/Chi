@@ -4,16 +4,16 @@
 // constructors
 //--------------------------------------------------
 
-JPEG::JPEG(const std::filesystem::path& path)
+JPEG::JPEG(const std::filesystem::path& path, Hash& hasher)
 : Image(path)
 {
-	readImage(path.c_str());
+	readImage(path.c_str(), hasher);
 }
 
-JPEG::JPEG(std::filesystem::path&& path)
+JPEG::JPEG(std::filesystem::path&& path, Hash& hasher)
 : Image(std::move(path))
 {
-	readImage(path.c_str());
+	readImage(path.c_str(), hasher);
 }
 
 //--------------------------------------------------
@@ -30,7 +30,7 @@ JPEG::JPEG(JPEG&& image)
 // readImage implementation
 //--------------------------------------------------
 
-void JPEG::readImage(const char *path)
+void JPEG::readImage(const char *path, Hash& hasher)
 {
 	// read image header and attempt to extract width and height from it
 	FILE *imageFile = fopen(path, "rb");
@@ -53,9 +53,8 @@ void JPEG::readImage(const char *path)
 	// hash the entire file
 	fseek(imageFile, 0, SEEK_SET);
 
-	Hash hasher;
 	hasher.digest(imageFile);
-	digest = hasher.buffer;
+	digest = hasher.output;
 
 	fclose(imageFile);
 }

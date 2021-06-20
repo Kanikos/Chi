@@ -33,7 +33,7 @@ protected:
 	// metadata reader
 	//--------------------------------------------------
 
-	virtual void readImage(const char *path) = 0;
+	virtual void readImage(const char *path, Hash& hasher) = 0;
 
 public:
 	//--------------------------------------------------	

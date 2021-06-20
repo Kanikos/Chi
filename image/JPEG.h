@@ -15,7 +15,7 @@ private:
 // readImage implementation
 //--------------------------------------------------
 
-void readImage(const char *path) override;
+void readImage(const char *path, Hash& hasher) override;
 
 public:
 
@@ -23,8 +23,8 @@ public:
 // constructors
 //--------------------------------------------------
 
-JPEG(const std::filesystem::path& path);
-JPEG(std::filesystem::path&& path);
+JPEG(const std::filesystem::path& path, Hash& hasher);
+JPEG(std::filesystem::path&& path, Hash& hasher);
 
 JPEG(const JPEG& image);
 JPEG(JPEG&& image);
