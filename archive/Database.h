@@ -302,7 +302,7 @@ public:
 		while(currentNode->greaterNode != nullptr)
 			currentNode = currentNode->greaterNode;
 
-		return currentNode;
+		return (currentNode == nullptr) ? nullptr : &(currentNode->data);
 	}
 	
 	// find and return a particular piece of data equal to the entered data
@@ -318,7 +318,7 @@ public:
 		while(currentNode->lesserNode != nullptr)
 			currentNode = currentNode->lesserNode;
 
-		return currentNode;
+		return (currentNode == nullptr) ? nullptr : &(currentNode->data);
 	}
 
 	//--------------------------------------------------
