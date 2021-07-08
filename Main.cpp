@@ -20,8 +20,18 @@ void iterateOver(const std::filesystem::path& directory, Hash& hasher)
 		// if here check if the file is an image based on extension
 		for(unsigned int format = 0; format < 6; format++)
 			if(entry.extension() == acceptableFormats[format])
-				db.insert(std::move(Image(entry, hasher)));
-				
+			{
+				Image newImage(entry, hasher);
+				Image *queryImage = db.find(newImage);
+
+				if(queryImage == nullptr)
+					db.insert(std::move(newImage));
+				else
+				{
+					std::cout << "╔ " << newImage << std::endl;
+					std::cout << "╚ " << (*queryImage) << std::endl;
+				}
+			}
 	}
 }
 
