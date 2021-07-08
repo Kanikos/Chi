@@ -240,13 +240,13 @@ private:
 			return nullptr;
 
 		// direct the data to the proper node, to continue searching
-		if(data < *currentNode)
-			return find(currentNode->lesserNode);
-		if(data > *currentNode)
-			return find(currentNode->greaterNode);
+		if(*currentNode > data)
+			return find(currentNode->lesserNode, data);
+		if(*currentNode < data)
+			return find(currentNode->greaterNode, data);
 
 		// the data is equal to the current node, return a pointer to that node
-		return currentNode;
+		return &currentNode->data;
 	}
 
 public:
