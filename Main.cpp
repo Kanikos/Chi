@@ -1,8 +1,10 @@
 #include <filesystem>
 #include <string>
+#include "archive/Database.h"
 #include "archive/Hash.h"
-#include "image/JPEG.h"
-#include "image/PNG.h"
+#include "Image.h"
+
+Database<Image> db;
 
 void iterateOver(const std::filesystem::path& directory, Hash& hasher)
 {
@@ -18,10 +20,8 @@ void iterateOver(const std::filesystem::path& directory, Hash& hasher)
 		// if here check if the file is an image based on extension
 		for(unsigned int format = 0; format < 6; format++)
 			if(entry.extension() == acceptableFormats[format])
-				if(format < 4)
-					std::cout << JPEG(entry, hasher) << std::endl;
-				else
-					std::cout << PNG(entry, hasher) << std::endl;
+				db.insert(std::move(Image(entry, hasher)));
+				
 	}
 }
 
@@ -51,5 +51,7 @@ int main(int argc, char** args)
 	// collecting information from them 
 	iterateOver(rootDirectory, hasher);
 
+	// TEMP: print out the largest element and it's dimensions
+	std::cout << "SIZE: " << db.size() << "\tMAX: "<< (*db.max()) << std::endl;
 	return 0;
 }
