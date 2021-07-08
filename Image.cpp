@@ -147,10 +147,14 @@ bool Image::operator>(const Image& image) const
 	// priority: width, height, digest
 	if(width > image.width)
 		return true;
-	if(width == image.width && height > image.height)
-		return true;
-	if(height == image.height && digest > image.digest) 
-		return true;
+	if(width == image.width)
+	{
+		if(height > image.height)
+			return true;
+
+		if(height == image.height && digest > image.digest)
+			return true;
+	}
 
 	return false;
 }
@@ -165,10 +169,14 @@ bool Image::operator<(const Image& image) const
 	// priortiy: width, height, digest
 	if(width < image.width)
 		return true;
-	if(width == image.width && height < image.height)
-		return true;
-	if(height == image.height && digest == image.digest)
-		return true;
+	if(width == image.width)
+	{
+		if(height < image.height)
+			return true;
+
+		if(height == image.height && digest < image.digest)
+			return true;
+	}
 
 	return false;
 }
@@ -201,5 +209,5 @@ Image& Image::operator=(Image&& image)
 
 std::ostream& operator<<(std::ostream& out, const Image& image)
 {
-	return out << image.width << "x" << image.height;
+	return out << image.path << ": " << image.width << "x" << image.height;
 }
