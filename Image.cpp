@@ -97,7 +97,6 @@ void Image::readPNG(FILE *imageFile, size_t& width, size_t& height)
 	fread(header, sizeof(unsigned char), HEADER_SIZE, imageFile);
 	if(png_sig_cmp(header, 0, HEADER_SIZE))
 	{
-		// TODO: error handling
 		// TEMP: dimensions are initialized to zero
 		width = 0;
 		height = 0;
@@ -120,6 +119,25 @@ void Image::readPNG(FILE *imageFile, size_t& width, size_t& height)
 
 void Image::readJPG(FILE *imageFile, size_t& width, size_t& height)
 {
+	// check if the file being read is actually a jpeg
+	constexpr unsigned int JPEG_SIG_1 = 0x00FFD8FF;
+	constexpr unsigned int JPEG_SIG_2 = 0x00004649;
+	constexpr unsigned int JPEG_SIG_3 = 0x00006669;
+	unsigned int sigBuffer;
+
+	fseek(imageFile, 0, SEEK_SET);
+	fread(&sigBuffer, 1, sizeof(unsigned int), imageFile);
+
+	sigBuffer &= 0x00FFFFFF;
+	if(sigBuffer != JPEG_SIG_1 && sigBuffer != JPEG_SIG_2 && sigBuffer != JPEG_SIG_3)
+	{
+		width = 0;
+		height = 0;
+		return;
+	}
+
+	fseek(imageFile, 0, SEEK_SET);
+
 	// read image header and attempt to extract width and height from it
 	jpeg_decompress_struct jpeg;
 
