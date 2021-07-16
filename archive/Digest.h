@@ -18,6 +18,12 @@ public:
 	Digest(Digest&& digest);
 
 	//--------------------------------------------------
+	// conversion functions
+	//--------------------------------------------------
+
+	const char* c_str() const;
+
+	//--------------------------------------------------
 	// comparison operators
 	//--------------------------------------------------
 	
@@ -45,7 +51,7 @@ public:
 	// stream operators
 	//--------------------------------------------------
 
-	friend std::istream& operator>>(std::istream& in, const Digest& digest);
+	friend std::istream& operator>>(std::istream& in, Digest& digest);
 	friend std::ostream& operator<<(std::ostream& out, const Digest& digest);
 
 	//--------------------------------------------------

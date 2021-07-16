@@ -28,6 +28,30 @@ Digest::Digest(Digest&& digest)
 }
 
 //--------------------------------------------------
+// conversion functions
+//--------------------------------------------------
+
+const char* Digest::c_str() const
+{
+	static char hashBuffer[(Hash::HASH_SIZE * 2) + 1];
+	char* currByte = hashBuffer;
+
+	if(hash == nullptr)
+	{
+		memset(hashBuffer, '0', Hash::HASH_SIZE * 2);
+		hashBuffer[Hash::HASH_SIZE * 2] = 0;
+	}
+	else 
+		for(size_t i = 0; i < Hash::HASH_SIZE; i++)
+		{
+			sprintf(currByte, "%02x", hash[i]);
+			currByte += 2;
+		}	
+
+	return hashBuffer;
+}
+
+//--------------------------------------------------
 // comparison operators
 //--------------------------------------------------
 
@@ -119,9 +143,9 @@ Digest& Digest::operator=(Digest&& digest)
 // stream operators
 //--------------------------------------------------
 
-std::istream& operator>>(std::istream& in, const Digest& digest)
+std::istream& operator>>(std::istream& in, Digest& digest)
 {
-	return in.read((char*) digest.hash, Hash::HASH_SIZE);
+	return in.read((const char*) digest.hash, Hash::HASH_SIZE);
 }
 
 std::ostream& operator<<(std::ostream& out, const Digest& digest)
