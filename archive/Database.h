@@ -233,7 +233,8 @@ private:
 		else delete insertNode;
 	}
 
-	T* find(Node* currentNode, const T& data)
+	template<typename Comparable>
+	T* find(Node* currentNode, const Comparable& data)
 	{
 		// check if the end of tree has been reached, return nullptr if so
 		if(currentNode == nullptr)
@@ -306,7 +307,8 @@ public:
 	}
 	
 	// find and return a particular piece of data equal to the entered data
-	T* find(const T& data)
+	template<typename Comparable>
+	T* find(const Comparable& data)
 	{
 		return find(root, data);
 	}
