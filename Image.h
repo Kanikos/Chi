@@ -10,6 +10,8 @@
 #include "archive/Digest.h"
 #include "archive/Hash.h"
 
+typedef void (*ImageReader)(FILE*, size_t&, size_t&, bool&);
+
 class Image
 {
 private:
@@ -21,6 +23,7 @@ private:
 	
 	Digest digest;
 	size_t width, height;
+	bool err = false;
 
 	//--------------------------------------------------
 	// constructors
@@ -30,31 +33,44 @@ private:
 	Image(std::filesystem::path&& path, Digest&& digest, size_t width, size_t height);
 
 	//--------------------------------------------------
-	// functions that help construct the image
+	// hashing
 	//--------------------------------------------------
 
-	void (*getReader(const std::string& extension))(FILE*, size_t&, size_t&);
 	void hash(FILE *imageFile, Hash& hasher);
-
-	//--------------------------------------------------
-	// image readers
-	//--------------------------------------------------
-
-	static void readPNG(FILE *path, size_t& width, size_t& height);
-	static void readJPG(FILE *path, size_t& width, size_t& height);
 
 public:
 	//--------------------------------------------------	
 	// constructors
 	//--------------------------------------------------
 
-	Image(const std::filesystem::path& path, Hash& hasher);
-	Image(std::filesystem::path&& path, Hash& hasher);
+	Image(const std::filesystem::path& path, FILE *imageFile, Hash& hasher, ImageReader read);
+	Image(std::filesystem::path&& path, FILE *imageFile, Hash& hasher, ImageReader read);
 
 	//--------------------------------------------------
 
 	Image(const Image& image);
 	Image(Image&& image);
+
+	//--------------------------------------------------
+	// image readers
+	//--------------------------------------------------
+
+	static ImageReader identify(FILE *file);
+
+	static void readPNG(FILE *path, size_t& width, size_t& height, bool& err);
+	static void readJPG(FILE *path, size_t& width, size_t& height, bool& err);
+
+	//--------------------------------------------------
+	// saving and getters
+	//--------------------------------------------------
+
+	void moveTo(const std::filesystem::path& filepath);
+
+	//--------------------------------------------------
+
+	std::string filename() const;
+	std::string extension() const;
+	bool error() const;
 
 	//--------------------------------------------------
 	// comparison operators

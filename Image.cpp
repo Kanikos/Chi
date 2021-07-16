@@ -4,40 +4,18 @@
 // constructors
 //--------------------------------------------------
 
-Image::Image(const std::filesystem::path& path, Hash& hasher)
+Image::Image(const std::filesystem::path& path, FILE *imageFile, Hash& hasher, ImageReader read)
 : path(path)
 {
-	FILE *imageFile = fopen(path.c_str(), "rb");
-	void (*read)(FILE*, size_t&, size_t&) = getReader(path.extension().string());
-
-	if(read == nullptr)
-	{
-		width = 0;
-		height = 0;
-		return;
-	}
-
-	read(imageFile, width, height);
+	read(imageFile, width, height, err);
 	hash(imageFile, hasher);
-	fclose(imageFile);
 }
 
-Image::Image(std::filesystem::path&& path, Hash& hasher)
+Image::Image(std::filesystem::path&& path, FILE *imageFile, Hash& hasher, ImageReader read)
 : path(std::move(path))
 {
-	FILE *imageFile = fopen(path.c_str(), "rb");
-	void (*read)(FILE*, size_t&, size_t&) = getReader(path.extension().string());
-
-	if(read == nullptr)
-	{
-		width = 0;
-		height = 0;
-		return;
-	}
-
-	read(imageFile, width, height);
+	read(imageFile, width, height, err);
 	hash(imageFile, hasher);
-	fclose(imageFile);
 }
 
 //--------------------------------------------------
@@ -61,34 +39,37 @@ Image::Image(Image&& image)
 {}
 
 //--------------------------------------------------
-// functions that help construct the image
+// image readers
 //--------------------------------------------------
 
-void (*Image::getReader(const std::string& extension))(FILE*, size_t&, size_t&)
-{
-	// determine the image type
-	if(extension == ".jpg" || extension == ".jpeg" || extension == ".JPG" || extension == ".JPEG")
-		return &readJPG;
+ImageReader Image::identify(FILE *file)
+{	
+	// magic numbers that identify which type of image file a file is 
+	static unsigned int PNG_MAGIC_NUMBER = 0x474E5089;
+	static unsigned int JPG_MAGIC_NUMBERS[] = {0x00FFD8FF, 0x00004649, 0x00006669};
 
-	if(extension == ".png" || extension == ".PNG")
+	// read the first 4 bytes as an int and determine the file type
+	unsigned int magicNumber;
+	fread(&magicNumber, 1, sizeof(unsigned int), file);
+
+	if(magicNumber == PNG_MAGIC_NUMBER)
+	{
+		fseek(file, 0, SEEK_SET);
 		return &readPNG;
+	}
+
+	magicNumber &= 0x00FFFFFF;
+	for(unsigned int i = 0; i < 3; i++)
+		if(magicNumber == JPG_MAGIC_NUMBERS[i])
+		{
+			fseek(file, 0, SEEK_SET);
+			return &readJPG;
+		}
 
 	return nullptr;
 }
 
-void Image::hash(FILE *imageFile, Hash& hasher)
-{
-	fseek(imageFile, 0, SEEK_SET);
-
-	hasher.digest(imageFile);
-	digest = hasher.output;
-}
-
-//--------------------------------------------------
-// image readers
-//--------------------------------------------------
-
-void Image::readPNG(FILE *imageFile, size_t& width, size_t& height)
+void Image::readPNG(FILE *imageFile, size_t& width, size_t& height, bool& err)
 {
 	constexpr size_t HEADER_SIZE = 8;
 	unsigned char header[HEADER_SIZE];
@@ -97,9 +78,11 @@ void Image::readPNG(FILE *imageFile, size_t& width, size_t& height)
 	fread(header, sizeof(unsigned char), HEADER_SIZE, imageFile);
 	if(png_sig_cmp(header, 0, HEADER_SIZE))
 	{
-		// TEMP: dimensions are initialized to zero
+		err = true;
+
 		width = 0;
 		height = 0;
+
 		return;
 	}
 
@@ -117,7 +100,7 @@ void Image::readPNG(FILE *imageFile, size_t& width, size_t& height)
 	png_destroy_read_struct(&png, &info, NULL);
 }
 
-void Image::readJPG(FILE *imageFile, size_t& width, size_t& height)
+void Image::readJPG(FILE *imageFile, size_t& width, size_t& height, bool& err)
 {
 	// check if the file being read is actually a jpeg
 	constexpr unsigned int JPEG_SIG_1 = 0x00FFD8FF;
@@ -131,8 +114,11 @@ void Image::readJPG(FILE *imageFile, size_t& width, size_t& height)
 	sigBuffer &= 0x00FFFFFF;
 	if(sigBuffer != JPEG_SIG_1 && sigBuffer != JPEG_SIG_2 && sigBuffer != JPEG_SIG_3)
 	{
+		err = true;
+
 		width = 0;
 		height = 0;
+
 		return;
 	}
 
@@ -154,6 +140,43 @@ void Image::readJPG(FILE *imageFile, size_t& width, size_t& height)
 
 	jpeg_abort_decompress(&jpeg);
 	jpeg_destroy_decompress(&jpeg);
+}
+
+void Image::hash(FILE *imageFile, Hash& hasher)
+{
+	fseek(imageFile, 0, SEEK_SET);
+	hasher.digest(imageFile);
+	digest = hasher.output;
+}
+
+//--------------------------------------------------
+// move & getter functions
+//--------------------------------------------------
+
+void Image::moveTo(const std::filesystem::path& filepath)
+{
+	std::filesystem::rename(path, filepath);
+	path = filepath;
+}
+
+//--------------------------------------------------
+
+std::string Image::filename() const
+{
+	char nameBuffer[84];
+	sprintf(nameBuffer, "%08dx%08d_%s", width, height, digest.c_str());
+
+	return std::string(nameBuffer); 
+}
+
+std::string Image::extension() const
+{
+	return path.extension().string();
+}
+
+bool Image::error() const
+{
+	return err;
 }
 
 //--------------------------------------------------
@@ -227,5 +250,8 @@ Image& Image::operator=(Image&& image)
 
 std::ostream& operator<<(std::ostream& out, const Image& image)
 {
-	return out << image.path << ": " << image.width << "x" << image.height;
+	char dimensionBuffer[15];
+	sprintf(dimensionBuffer, "%06dx%06d_", image.width, image.height);
+	
+	return out << dimensionBuffer << image.digest;
 }
